@@ -5,6 +5,7 @@
 #include <maxon_epos_driver/EposManager.hpp>
 #include "Bus.cpp"
 #include "CartesianJoint.cpp"
+#include <boost/foreach.hpp>
 
 using namespace std;
 
@@ -17,6 +18,7 @@ class CartesianRobotHW : public hardware_interface::RobotHW{
         void read(const ros::Time &time, const ros::Duration &period);
         void write(const ros::Time &time, const ros::Duration &period);
         void updateDiagnostics();
+        void doSwitch();
 
     private:
         void init_motors(ros::NodeHandle &root_nh, ros::NodeHandle &robot_nh,
@@ -121,9 +123,31 @@ bool CartesianRobotHW::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_nh,
     
     return true;
 }
-void CartesianRobotHW::read(const ros::Time &time, const ros::Duration &period){}
-void CartesianRobotHW::write(const ros::Time &time, const ros::Duration &period){}
-void CartesianRobotHW::updateDiagnostics(){}
+void CartesianRobotHW::read(const ros::Time &time, const ros::Duration &period){
+    // read actutor states
+    epos_manager_.read(epos_joint_position_, epos_joint_velocity_, epos_joint_current_);
+
+    // read igus motors
+    int i = 0;
+    BOOST_FOREACH( CartesianJoint* joint, m_pJoints)
+    {
+        joint->Read(igus_joint_position_[i], igus_joint_velocity_[i], igus_joint_effort_command_[i]);
+        i++;
+    }
+    // TEST
+}
+void CartesianRobotHW::write(const ros::Time &time, const ros::Duration &period){
+    // TODO do some safety filter here [saturation, limit, etc]
+
+    // write epos motor
+    epos_manager_.write(epos_joint_position_command_, epos_joint_velocity_command_, epos_joint_effort_command_);
+    // TODO write igus motors
+
+    // write igus motors
+
+}
+void CartesianRobotHW::updateDiagnostics(){}    // TODO
+void CartesianRobotHW::doSwitch(){}             // TODO
 
 void CartesianRobotHW::init_motors(ros::NodeHandle &root_nh, ros::NodeHandle &robot_nh,
             const std::vector<std::string> &motor_names)
