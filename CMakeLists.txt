@@ -19,6 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
   control_msgs
   genmsg
   rviz
+  maxon_epos_driver
+  maxon_epos_msgs
+  controller_manager
 )
 
 ## System dependencies are found with CMake's conventions
@@ -114,7 +117,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES cpr_robot
   CATKIN_DEPENDS roscpp std_msgs sensor_msgs control_msgs rviz
 #  DEPENDS system_lib
@@ -205,6 +208,11 @@ add_dependencies(RobotPanel cpr_robot_generate_messages_cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+add_executable(cartesian_robot
+  src/cartesian_robot_node.cpp
+)
+target_link_libraries(cartesian_robot ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
