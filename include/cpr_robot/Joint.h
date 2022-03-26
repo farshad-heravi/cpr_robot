@@ -1,4 +1,5 @@
-#pragma once
+#ifndef JOINT_H
+#define JOINT_H
 
 namespace cpr_robot
 {
@@ -12,13 +13,13 @@ namespace cpr_robot
     public:
         //! Status bit indicating that the joint has been referenced.
         static constexpr uint8_t DATABIT_REFERENCED=0x80;
+        //! Pointer to an instance of the MotorModule class which represents the module and firmware driving the motor for the joint.
+        MotorModule* m_pModule;
     private:
         //! Flag indicating whether the joint is reported as referenced by the firmware.
         bool m_bReferenced;
         //! A handle to the current ROS node.
         ros::NodeHandle m_Node;
-        //! Pointer to an instance of the MotorModule class which represents the module and firmware driving the motor for the joint.
-        MotorModule* m_pModule;
         //! The current position of the joint computed from the encoder position and joint parameters in degrees.
         double m_CurrentPosition;
         //! The current angular velocity of the joint computed from the change in encoder position and joint parameters in degrees per second.
@@ -49,9 +50,9 @@ namespace cpr_robot
         virtual void OnInit();
         virtual void OnRead();
         virtual void OnWrite(double override);
-        int32_t PositionToTicks(const double position) const;
         double TicksToPosition(const int32_t ticks) const;
     public:
+        int32_t PositionToTicks(const double position) const;
         void Init();
         void Read();
         void Write(double override);
@@ -89,3 +90,5 @@ namespace cpr_robot
         void Stop();
     };
 }
+
+#endif

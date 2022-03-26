@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IGUS5DOFSV_H
+#define IGUS5DOFSV_H
 
 namespace cpr_robot
 {
@@ -13,3 +14,5 @@ namespace cpr_robot
             virtual ~igus_5DOF_SV();
     };
 }
+
+#endif

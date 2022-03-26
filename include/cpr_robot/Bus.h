@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUS_H
+#define BUS_H
 
 namespace cpr_robot
 {
@@ -49,3 +50,5 @@ namespace cpr_robot
 		bool get_IsConnected() const;
 	};
 }
+
+#endif

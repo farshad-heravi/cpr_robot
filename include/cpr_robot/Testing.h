@@ -1,5 +1,5 @@
-#ifndef CPRMOVER6_H
-#define CPRMOVER6_H
+#ifndef TESTING_H
+#define TESTING_H
 
 namespace cpr_robot
 {
@@ -7,11 +7,11 @@ namespace cpr_robot
 	//! \brief Class representing a Mover6 robot from Commonplace Robotics GmbH. 
 	//!
 	//! All model specific parameters are handled by this class
-    class CPRMover6 : public Robot
+    class Testing : public Robot
     {
         public:
-            CPRMover6();
-            virtual ~CPRMover6();
+            Testing();
+            virtual ~Testing();
     };
 }
 

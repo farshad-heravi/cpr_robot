@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef JOINTCONTROL_H
+#define JOINTCONTROL_H
 namespace cpr_rviz
 {
 	//! \class JointControl JointControl.h <JointControl.h>
@@ -63,3 +63,5 @@ namespace cpr_rviz
  	    JointControl(const uint32_t jointId, QWidget* parent = nullptr );
     };
 }
+
+#endif

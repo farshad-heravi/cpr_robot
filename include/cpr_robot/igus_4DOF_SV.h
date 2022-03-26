@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IGUS4DOFSV_H
+#define IGUS4DOFSV_H
 
 namespace cpr_robot
 {
@@ -13,3 +14,5 @@ namespace cpr_robot
             virtual ~igus_4DOF_SV();
     };
 }
+
+#endif

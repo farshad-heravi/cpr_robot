@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TAGGEDBUTTON_H
+#define TAGGEDBUTTON_H
 
 namespace cpr_rviz
 {
@@ -23,3 +24,5 @@ namespace cpr_rviz
         void OnClicked(bool bChecked=false);
     };
 }
+
+#endif

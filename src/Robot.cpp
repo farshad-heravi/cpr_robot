@@ -454,5 +454,5 @@ namespace cpr_robot
             return m_pJoints[m_OutputChannels[index].ModuleIndex]->get_DigitalOutput(m_OutputChannels[index].ChannelIndex);
     }
 
-
+    
 }

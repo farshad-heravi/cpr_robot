@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 // #include <ros/console.h>
 #include <controller_manager/controller_manager.h>
-#include "CartesianRobotHW.cpp"
+#include <cpr_robot.h>
 
 int main(int argc, char *argv[]){
     ros::init(argc, argv, "cartesian_robot_node");
@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     ros::removeROSArgs(argc, argv, motor_names);
     motor_names.erase(motor_names.begin()); // remove exec path
     
-    CartesianRobotHW hardware;
+    cpr_robot::CartesianRobotHW hardware;
     if (!hardware.init(nh, pnh, motor_names)) {
         ROS_FATAL("Failed to initialize motors");
         return 1;
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]){
         const ros::Time now(ros::Time::now());
         const ros::Duration period(now - last);
         hardware.read(now, period);
-        controllers.update(now, period);
-        hardware.write(now, period);
+        // controllers.update(now, period);
+        // hardware.write(now, period);
     //   // hardware.updateDiagnostics(); // TODO
         last = now;
         control_rate.sleep();

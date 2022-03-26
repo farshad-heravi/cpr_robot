@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef ROBOTPANEL_H
+#define ROBOTPANEL_H
 namespace cpr_rviz
 {
 	//! \class RobotPanel RobotPanel.h <RobotPanel.h>
@@ -97,3 +97,4 @@ namespace cpr_rviz
 }
 
 //! \namespace cpr_rviz Provides classes defining a plugin for RViz.
+#endif

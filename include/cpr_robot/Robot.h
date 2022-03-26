@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ROBOT_H
+#define ROBOT_H
 
 #include <vector>
 
@@ -67,8 +68,6 @@ namespace cpr_robot
         ros::ServiceServer m_RobotCommandServer;
         //! Instance of the Bus class that will be used to communicate with the firmware of the modules that are controlling the robot.
         Bus m_Bus;
-        //! Pointer to an array of instances of the Joint class. One entry per joint.
-        Joint** m_pJoints;
         //! Pointer to an array of instances of the Joint class. One entry per digital I/O module.
         Joint** m_pIOmodules;
         //! The model designation of the robot.
@@ -83,6 +82,8 @@ namespace cpr_robot
         bool GetJointInfoHandler(cpr_robot::GetJointInfo::Request  &req, cpr_robot::GetJointInfo::Response &res);
         bool RobotCommandHandler(cpr_robot::RobotCommand::Request  &req, cpr_robot::RobotCommand::Response &res);
     protected:
+        //! Pointer to an array of instances of the Joint class. One entry per joint.
+        Joint** m_pJoints;
         uint32_t define_Input(const bool onSeperateModule, const uint8_t moduleIndex, const uint8_t channelIndex, const std::string& name);
         uint32_t define_Output(const bool onSeperateModule, const uint8_t moduleIndex, const uint8_t channelIndex, const std::string& name);
         void set_Override(const double override);
@@ -116,3 +117,5 @@ namespace cpr_robot
         virtual ~Robot();
     };
 }
+
+#endif

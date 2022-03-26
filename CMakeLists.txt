@@ -211,8 +211,26 @@ add_dependencies(RobotPanel cpr_robot_generate_messages_cpp)
 
 add_executable(cartesian_robot
   src/cartesian_robot_node.cpp
+  src/Bus.cpp
+  src/Joint.cpp
+  src/Robot.cpp
+  src/MotorModule.cpp
+  src/CartesianCPR.cpp
+  src/CartesianRobotHW.cpp
 )
 target_link_libraries(cartesian_robot ${catkin_LIBRARIES} )
+add_dependencies(cartesian_robot cpr_robot_generate_messages_cpp)
+
+#add_executable(drylin_gantry 
+#  src/main_drylin_gantry_test.cpp 
+#  src/Bus.cpp 
+#  src/MotorModule.cpp 
+#  src/Robot.cpp 
+#  src/Joint.cpp 
+#  src/drylin_gantry.cpp 
+#)
+#target_link_libraries(drylin_gantry ${catkin_LIBRARIES})
+#add_dependencies(drylin_gantry cpr_robot_generate_messages_cpp)
 
 #############
 ## Install ##

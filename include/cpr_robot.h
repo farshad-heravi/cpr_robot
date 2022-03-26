@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CPRROBOT_H
+#define CPRROBOT_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -47,5 +48,9 @@
 #include "cpr_robot/igus_4DOF_SV.h"
 #include "cpr_robot/igus_5DOF_SV.h"
 #include "cpr_robot/CPRMover6.h"
+#include "cpr_robot/CartesianCPR.h"
+#include "cpr_robot/CartesianRobotHW.h"
 
 //! \namespace cpr_robot Provides everything needed to control a robot over a CAN bus connection within a ROS environment.
+
+#endif
