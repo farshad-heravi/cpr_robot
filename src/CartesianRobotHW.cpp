@@ -89,12 +89,12 @@ namespace cpr_robot{
         }
 
         // init igus parts
-        igus_robot.Init(motor_names);
+        igus_robot.Init(motor_names);    //uncomment
         // reference_igus_motors();
         
         // init maxon motor
+// uncomment
         init_motors(root_nh_, robot_nh_, motor_names);
-
         // initialize publisher and subscribers
         if(!root_nh_.hasParam("cartesian_traj_topicname"))
             ROS_ERROR_STREAM("cartesian_traj_topicname is not defined in rosparam.");
@@ -123,7 +123,7 @@ namespace cpr_robot{
 
         // fill in the joint state msg
         // TODO get third link gear ratio and replace with 13.3 below
-        std::vector<double> pos_temp = {igus_joint_position_[0], igus_joint_position_[1], epos_joint_position_[0]/13.3};
+        std::vector<double> pos_temp = {igus_joint_position_[0], igus_joint_position_[1], epos_joint_position_[0]/joint_ratios_[2]};
         std::vector<double> vel_temp = {igus_joint_velocity_[0], igus_joint_velocity_[1], epos_joint_velocity_[0]};
         // std::vector<double> eff_temp = {igus_joint_current_[0], igus_joint_current_[1], epos_joint_current_[0]};
         
@@ -142,6 +142,13 @@ namespace cpr_robot{
         igus_joint_position_command_[0] = pos[0];
         igus_joint_position_command_[1] = pos[1];
         epos_joint_position_command_[0] = pos[2];
+        double e1 = pos[0] - igus_joint_position_[0];
+        double e2 = pos[1] - igus_joint_position_[1];
+        double e3 = pos[2] - epos_joint_position_[0];
+        ROS_INFO_STREAM("############################");
+        ROS_INFO_STREAM("Delta 1: " << e1);
+        ROS_INFO_STREAM("Delta 2: " << e2);
+        ROS_INFO_STREAM("Delta 3: " << e3);
         // TODO do some safety filter here [saturation, limit, etc]
         // set igus limits
         for(size_t i=0;i<2;i++){
@@ -161,7 +168,7 @@ namespace cpr_robot{
         
         // write igus motors
         igus_robot.Write(igus_joint_position_command_, igus_joint_velocity_command_, igus_joint_effort_command_);
-
+// uncomment
         // write epos motor
         epos_manager_.write(epos_joint_position_command_, epos_joint_velocity_command_, epos_joint_effort_command_);
     }
@@ -220,10 +227,10 @@ namespace cpr_robot{
         
 
         // CONFIG
-        needle_ = {0.6, 0.3};
+        needle_ = {0.4, 0.3};
         home_ = {0.2,0.3,1.57};
         joint_ratios_ = {0.01114,0.01114,13.33};
-        sewing_point_ = {0.3,0.3,-1.57};
+        sewing_point_ = {0.15,0.3,0.0};
         offsets_ = {0,0,0};
         third_link_radius_ = 0;
     }
@@ -236,20 +243,27 @@ namespace cpr_robot{
 
         // TODO correct these
         if (absolute){
+            ROS_INFO_STREAM("Asbolute");
             x = (x + offsets_[0]) / joint_ratios_[0];
             y = (y + offsets_[1]) / joint_ratios_[1];
             z = z * joint_ratios_[2];   // TODO offset in z? needed?
             return;
         }
 
-        double theta = - M_PI/2 - z;
+        double theta;
+        if (z > M_PI/2)
+            theta = z - 2 * M_PI;
+        else
+            theta = z;
+        theta = theta - M_PI/2;
+        // double theta = - M_PI/2 - z;
         double calc_x = needle_[0] - (x * std::cos(theta) - y * std::sin(theta) );
         double calc_y = needle_[1] - (y * std::cos(theta) + x * std::sin(theta) );
         
         // add offsets
         calc_x = calc_x + offsets_[0];
         calc_y = calc_y + offsets_[1];
-
+        
         x = calc_x / joint_ratios_[0];
         y = calc_y / joint_ratios_[1];
         z = theta * joint_ratios_[2];
@@ -268,10 +282,35 @@ namespace cpr_robot{
     void CartesianRobotHW::ik(const geometry_msgs::Vector3ConstPtr &msg)
     {
         double x = msg->x, y = msg->y, z = msg->z;
-        ROS_INFO_STREAM("IK in m: " << x << ", " << y << ", " << z << " [m]");
+        ROS_INFO_STREAM("Received msg: " << msg->x << ", " << msg->y << ", " << msg->z << "]");
         ik_calculations(x,y,z);
-        ROS_INFO_STREAM("IK: " << x << ", " << y << ", " << z << " [rad]");
+        ROS_INFO_STREAM("after IK: " << x << ", " << y << ", " << z << " [rad]");
 
+
+        // ///
+        // sensor_msgs::JointState msg2;
+        // std_msgs::Header header;
+        // header.stamp = ros::Time::now();
+        // msg2.header = header;
+
+        // // read maxon motor state
+        // epos_manager_.read(epos_joint_position_, epos_joint_velocity_, epos_joint_current_);
+
+        // // read igus motors
+        // igus_robot.Read(igus_joint_position_, igus_joint_velocity_, igus_joint_current_);
+
+        // // fill in the joint state msg
+        // // TODO get third link gear ratio and replace with 13.3 below
+        // std::vector<double> pos_temp = {x, y, z/13.3};
+        // std::vector<double> vel_temp = {igus_joint_velocity_[0], igus_joint_velocity_[1], epos_joint_velocity_[0]};
+        // // std::vector<double> eff_temp = {igus_joint_current_[0], igus_joint_current_[1], epos_joint_current_[0]};
+        
+        // msg2.name = motor_names_;
+        // msg2.position = pos_temp;
+        // msg2.velocity = vel_temp;
+        // // msg.effort = eff_temp;   // not required for now, always zero for igus motors
+        // joint_state_pub_.publish(msg2);
+        // ///
         std::vector<double> joint_pos = {x, y, z};
         
         // write to hardware
@@ -281,7 +320,7 @@ namespace cpr_robot{
     void CartesianRobotHW::gotoHandler(const geometry_msgs::Vector3ConstPtr &msg)
     {
         double x = msg->x, y = msg->y, z = msg->z;
-        ik_calculations(x,y,z);
+        ik_calculations(x,y,z,true);
         std::vector<double> joint_pos = {x, y, z};        
         // write to hardware
         write(joint_pos);
@@ -294,7 +333,7 @@ namespace cpr_robot{
         double t2 = sewing_point_[1];
         double t3 = sewing_point_[2];
         // ROS_INFO_STREAM("desired angle is: " << t3);
-        ik_calculations(t1,t2,t3, true);
+        ik_calculations(t1,t2,t3,true);
         ROS_INFO_STREAM("third motor rotation: " << t3 << " [rad]");
         std::vector<double> command = {igus_joint_position_[0], igus_joint_position_[1], t3};
         write(command);
