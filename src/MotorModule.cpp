@@ -8,7 +8,8 @@ namespace cpr_robot
 	//! The motor position will be incremented by from one SetJoint command to the next by the value provided.
 	//! \param ticks Desired increment measured in ticks.
 	void MotorModule::set_Increment(const int32_t ticks)
-	{
+	{	
+		// ROS_INFO_STREAM("!!! m_MotorIncrement    " << ticks);
 		m_MotorIncrement=ticks;
 	}
 		
@@ -125,19 +126,61 @@ namespace cpr_robot
 		pModule->WriteLoop();
 	}
 
+	void MotorModule::set_TargetPosition(int target_ticks)
+	{
+		m_target_ticks = target_ticks;
+	}
+
+	void MotorModule::set_JointOverride(double override)
+	{
+		m_override = override;
+	}
+
+	void MotorModule::set_Max_velocity(double velocity)
+	{
+		m_max_velocity = velocity;
+	}
+
 	//! \brief The write loop that will asynchronuously send setposition messages to the module over the CAN bus.
 	void MotorModule::WriteLoop()
 	{
 		ROS_INFO("Module %u: %s",m_ModuleId, "Write thread started.");
 		while (m_bIsRunning)
 		{
+			// std::chrono::high_resolution_clock::time_point last=std::chrono::high_resolution_clock::now();
+			// set_DesiredPosition(m_MotorPosition+m_MotorIncrement);
+			// Command_SetJoint(m_MotorPosition, m_DOutputs);
+			// std::chrono::high_resolution_clock::time_point current=std::chrono::high_resolution_clock::now();
+			// int64_t ms=(std::chrono::duration_cast<std::chrono::milliseconds>(current - last)).count();
+			// if(ms<50)
+			// 	std::this_thread::sleep_for(std::chrono::milliseconds(m_UpdateInterval-ms));
+			
 			std::chrono::high_resolution_clock::time_point last=std::chrono::high_resolution_clock::now();
-			set_DesiredPosition(m_MotorPosition+m_MotorIncrement);
+			int error = m_target_ticks - m_MotorPosition;
+			if ( std::abs(error) > 10 ) // CONFIG
+			{
+				double seconds = get_UpdateInterval();
+            	int m_MotorIncrement = m_max_velocity*seconds*m_override;
+				if (std::abs(error) < m_MotorIncrement)
+					m_MotorIncrement = error;
+				if (error < 0)
+					m_MotorIncrement = -m_MotorIncrement;
+				m_MotorPosition = m_MotorPosition+m_MotorIncrement;
+				set_DesiredPosition(m_MotorPosition);
+				// ROS_INFO_STREAM("##############");
+				// ROS_INFO_STREAM(m_ModuleId << " desired in ticks : " << m_target_ticks);
+				// ROS_INFO_STREAM(m_ModuleId << " m_MotorPosition : " << m_MotorPosition);
+				// ROS_INFO_STREAM(m_ModuleId << " m_max_velocity : " << m_max_velocity);
+				// ROS_INFO_STREAM(m_ModuleId << " m_override : " << m_override);
+				// ROS_INFO_STREAM(m_ModuleId << " error : " << error);
+				// ROS_INFO_STREAM(m_ModuleId << " m_MotorIncrement : " << m_MotorIncrement);
+			}
 			Command_SetJoint(m_MotorPosition, m_DOutputs);
 			std::chrono::high_resolution_clock::time_point current=std::chrono::high_resolution_clock::now();
 			int64_t ms=(std::chrono::duration_cast<std::chrono::milliseconds>(current - last)).count();
 			if(ms<50)
 				std::this_thread::sleep_for(std::chrono::milliseconds(m_UpdateInterval-ms));
+			
 		}
 		ROS_INFO("Module %u: %s",m_ModuleId, "Write thread terminating.");
 	}

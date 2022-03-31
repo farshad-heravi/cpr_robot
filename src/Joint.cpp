@@ -79,10 +79,14 @@ namespace cpr_robot
     {
         uint8_t dataBits;
         m_CurrentPosition=ReadPosition(m_LastTimeStamp, m_LastUpdate,m_ErrorFlags, dataBits);
+        // ROS_INFO_STREAM("Current position: " << m_CurrentPosition); // REMOVE
         m_bReferenced=(dataBits&DATABIT_REFERENCED)!=0x00;
+        ROS_INFO_STREAM("Reference status of " << m_JointName << ": " << m_bReferenced);
         m_CurrentEffort=0.0;
         m_CurrentVelocity=0.0;
-        m_DesiredVelocity=0.0;
+        m_DesiredVelocity=m_MaxVelocity;  // rad/s
+        m_pModule->set_Max_velocity( PositionToTicks(m_MaxVelocity) );
+        ROS_INFO_STREAM(m_JointName << " m_DesiredVelocity is set to " << m_DesiredVelocity << " [rad/s]");
         m_JointJogSubscriber=m_Node.subscribe("/JointJog",10,&Joint::JointJogCallback, this);
     }
     
@@ -97,6 +101,7 @@ namespace cpr_robot
                 if(msg.velocities.size()>i)
                 {
                     m_DesiredVelocity=msg.velocities[i]*m_MaxVelocity;
+                    ROS_INFO_STREAM("Set m_DesiredVelocity of " << m_JointName << " to " << msg.velocities[i] << " of " << m_MaxVelocity << "=" << m_DesiredVelocity << " [rad/s]");
                 }
             }
         }
@@ -121,6 +126,7 @@ namespace cpr_robot
     void Joint::set_MaxVelocity(const double velocity)
     {
         m_MaxVelocity=M_PI*velocity/180.0;
+        m_pModule->set_Max_velocity( PositionToTicks(m_MaxVelocity) );
     }
     
     //! \brief Gets the lower position bound of the joint.
@@ -148,6 +154,7 @@ namespace cpr_robot
     //! \param position The new upper bound for the position of the joint in degrees.
     void Joint::set_MaxPosition(const double position)
     {
+        ROS_INFO_STREAM("Max Pos set to " << M_PI*PositionToTicks(position)/180.0 << " tikcs.");
         m_pModule->set_MaxPosition(M_PI*PositionToTicks(position)/180.0);
     }
     
@@ -218,14 +225,24 @@ namespace cpr_robot
     //! \brief Sends the current motion commands to the firmware in the module that is controlling the motor of the joint.
     //! This virtual function is intended to be overridable by derived classes, but should then be called from the override.
     //! \param override The override factor applied to the currently desired velocity. Should be a value between 0 and 1.
-    void Joint::OnWrite(double override)
+    void Joint::OnWrite(double overridee, double desiredPosition)   // desiredPosition in radians
     {
+        // if(m_ErrorFlags==0x00)
+        // {
+        //     double seconds=m_pModule->get_UpdateInterval();
+        //     ROS_INFO_STREAM("########################################");
+        //     ROS_INFO_STREAM("seconds: " << seconds);
+        //     double desiredPositionIncrement=m_DesiredVelocity*seconds*overridee;
+        //     ROS_INFO_STREAM("m_DesiredVelocity is " << m_DesiredVelocity << " [rad/s]");
+        //     ROS_INFO_STREAM("desiredPositionIncrement: " << desiredPositionIncrement << " [rad]");
+        //     int32_t desiredTicks=PositionToTicks(desiredPositionIncrement);
+        //     ROS_INFO_STREAM("desiredTicks increments: " << desiredTicks << " [ticks]");
+        //     m_pModule->set_Increment(desiredTicks);
+        // }
         if(m_ErrorFlags==0x00)
         {
-            double seconds=m_pModule->get_UpdateInterval();
-            double desiredPositionIncrement=m_DesiredVelocity*seconds*override;
-            int32_t desiredTicks=PositionToTicks(desiredPositionIncrement);
-            m_pModule->set_Increment(desiredTicks);
+            int desired_position_in_ticks = PositionToTicks(desiredPosition);
+            m_pModule->set_TargetPosition(desired_position_in_ticks);
         }
     }
 
@@ -249,9 +266,9 @@ namespace cpr_robot
     //!
     //! Will call the virtual OnWrite method.
     //! \param override The override factor applied to the currently desired velocity. Should be a value between 0 and 1.
-    void Joint::Write(double override)
+    void Joint::Write(double override, double desiredPosition)
     {
-        OnWrite(override);
+        OnWrite(override, desiredPosition);
     }
 
     //! \brief Used when publishing joint states.

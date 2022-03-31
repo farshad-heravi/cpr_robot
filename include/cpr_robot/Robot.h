@@ -45,11 +45,9 @@ namespace cpr_robot
         static constexpr uint32_t COMMAND_DOUT_ENABLE=8;
         //! Command requesting that a digital output should be disabled.
         static constexpr uint32_t COMMAND_DOUT_DISABLE=9;
+        //! go to swing starting point
+        static constexpr uint32_t GOTO_STARTING_POINT = 10;
     private:
-        //! The number of joints of the robot.
-        const size_t m_CountJoints;
-        //! The number of digital I/O boards of the robot.
-        const size_t m_CountIOmodules;
         //! A handle to the current ROS node.
         ros::NodeHandle m_Node;
         //! Publisher that will publish the state of all joints on the /joint_states ROS topic.
@@ -68,12 +66,8 @@ namespace cpr_robot
         ros::ServiceServer m_RobotCommandServer;
         //! Instance of the Bus class that will be used to communicate with the firmware of the modules that are controlling the robot.
         Bus m_Bus;
-        //! Pointer to an array of instances of the Joint class. One entry per digital I/O module.
-        Joint** m_pIOmodules;
         //! The model designation of the robot.
         std::string m_ModelName;
-        //! The current override value used to control the speed of the joints.
-        double m_Override;
         //! Vector containing all defined output channels.
         std::vector<IOchannel> m_OutputChannels;
         //! Vector containing all defined input channels.
@@ -82,8 +76,14 @@ namespace cpr_robot
         bool GetJointInfoHandler(cpr_robot::GetJointInfo::Request  &req, cpr_robot::GetJointInfo::Response &res);
         bool RobotCommandHandler(cpr_robot::RobotCommand::Request  &req, cpr_robot::RobotCommand::Response &res);
     protected:
-        //! Pointer to an array of instances of the Joint class. One entry per joint.
-        Joint** m_pJoints;
+        //! The current override value used to control the speed of the joints.
+        double m_Override;
+        //! Pointer to an array of instances of the Joint class. One entry per digital I/O module.
+        Joint** m_pIOmodules;
+        //! The number of joints of the robot.
+        const size_t m_CountJoints;
+        //! The number of digital I/O boards of the robot.
+        const size_t m_CountIOmodules;
         uint32_t define_Input(const bool onSeperateModule, const uint8_t moduleIndex, const uint8_t channelIndex, const std::string& name);
         uint32_t define_Output(const bool onSeperateModule, const uint8_t moduleIndex, const uint8_t channelIndex, const std::string& name);
         void set_Override(const double override);
@@ -110,6 +110,9 @@ namespace cpr_robot
         bool get_Output(const uint32_t index) const;
         bool get_Input(const uint32_t index) const;
     public:
+        //! Pointer to an array of instances of the Joint class. One entry per joint.
+        Joint** m_pJoints;
+        void DoReferencing();
         void Init();
         void Read();
         void Write();

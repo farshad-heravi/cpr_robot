@@ -1,18 +1,18 @@
 #include <ros/ros.h>
-// #include <ros/console.h>
+#include <ros/console.h>
 #include <controller_manager/controller_manager.h>
 #include <cpr_robot.h>
 
 int main(int argc, char *argv[]){
     ros::init(argc, argv, "cartesian_robot_node");
     ros::NodeHandle nh;
-    ros::NodeHandle pnh("~");
+    ros::NodeHandle pnh(nh, "cartesian_"); // TODO get robot name from rosparam
 
     std::vector< std::string > motor_names;
     ros::removeROSArgs(argc, argv, motor_names);
     motor_names.erase(motor_names.begin()); // remove exec path
     
-    cpr_robot::CartesianRobotHW hardware;
+    cpr_robot::CartesianRobotHW hardware(motor_names, pnh);
     if (!hardware.init(nh, pnh, motor_names)) {
         ROS_FATAL("Failed to initialize motors");
         return 1;

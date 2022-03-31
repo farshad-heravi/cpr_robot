@@ -1,6 +1,7 @@
 #include <cpr_robot.h>
 #include <iostream>
 #include <sstream>
+#include <ros/ros.h>
 
 namespace cpr_robot
 {
@@ -98,6 +99,8 @@ namespace cpr_robot
             case COMMAND_OVERRIDE:
                 ROS_INFO("COMMAND_OVERRIDE from %s. Override=%lf%%",req.Sender.c_str(),100.0*req.PayloadFloat);
                 m_Override=req.PayloadFloat;
+                for(size_t i=0;i<m_CountJoints;i++)
+                    m_pJoints[i]->m_pModule->set_JointOverride(m_Override);
                 return true;
             case COMMAND_CONNECT:
                 ROS_INFO("COMMAND_CONNECT from %s.",req.Sender.c_str());
@@ -161,6 +164,12 @@ namespace cpr_robot
         }
     }
 
+    void Robot::DoReferencing()
+    {
+        ROS_INFO("Referencing ...");
+        for(size_t i=0;i<m_CountJoints;i++)
+            m_pJoints[i]->StartReferencing();
+    }
     //! \brief Destructor of the Robot class.
     Robot::~Robot()
     {
@@ -177,6 +186,8 @@ namespace cpr_robot
     void Robot::set_Override(const double override)
     {
         m_Override=override;
+        for(size_t i=0;i<m_CountJoints;i++)
+            m_pJoints[i]->m_pModule->set_JointOverride(m_Override);
     }
     
     //! \brief Gets the override value used to control the speed of the joints.
@@ -284,8 +295,8 @@ namespace cpr_robot
     //! \brief Sends the current motion commands to the firmware in the modules that are controlling the motors of the robot.
     void Robot::Write()
     {
-        for(size_t i=0;i<m_CountJoints;i++)
-            m_pJoints[i]->Write(m_Override);
+        // for(size_t i=0;i<m_CountJoints;i++)
+        //     m_pJoints[i]->Write(m_Override);
     }
 
     //! \brief Initializes the robot. 
@@ -300,8 +311,10 @@ namespace cpr_robot
     //! Should be called after all robot parameters (gear ratios, ticks per motor rotation) have been set.
     void Robot::OnInit()
     {
-        for(size_t i=0;i<m_CountJoints;i++)
+        for(size_t i=0;i<m_CountJoints;i++){
             m_pJoints[i]->Init();
+            m_pJoints[i]->m_pModule->set_JointOverride(m_Override);
+        }
         for(size_t i=0;i<m_CountIOmodules;i++)
             m_pIOmodules[i]->Init();
     }

@@ -11,7 +11,16 @@ namespace cpr_robot
 	//! joint positions (angles measured in degrees) is done by the Joint class which holds a pointer to an instance of the MotorModule class.
 	class MotorModule
 	{
-    public: 
+    public:
+
+		int m_target_ticks;
+		//! max velocity in ticks
+		double m_max_velocity;
+		//! overridee
+		double m_override;
+
+
+
 		//! Error flag indicating that the microcontroller restarted after a brown out because the suppy voltage was too low or µC got stuck.
         static constexpr uint32_t STATUSFLAG_BROWN_OUT = 0x00000001;
         //! Error flag indicating that velocity changes too fast.
@@ -53,14 +62,16 @@ namespace cpr_robot
 		std::thread* m_pWriteThread; 
 		//! The timestamp value that will be sent to the module with the next setposition command.
 		uint8_t m_CurrentTimeStamp; 
+
+		
 		static void WriteThread(MotorModule* pModule);
 		void WriteLoop();
+	public:
 		void Command_ResetError();
 		void Command_DisableMotor();
 		void Command_EnableMotor();
 		void Command_StartReferencing();
 		void Command_SetZeroPosition();
-	public:
 		//! Contains the state of the digital outputs of the module.
 		uint8_t m_DOutputs; 
 		void Command_SetJoint(const int32_t ticks, const uint8_t doutput);
@@ -88,6 +99,12 @@ namespace cpr_robot
 		void Start();
 		void StartReferencing();
 		void SetZero();
+
+		
+
+		void set_JointOverride(double override);
+		void set_Max_velocity(double velocity);
+		void set_TargetPosition(int target_ticks);
 	};
 }
 

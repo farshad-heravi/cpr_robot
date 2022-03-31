@@ -49,13 +49,13 @@ namespace cpr_robot
     protected:
         virtual void OnInit();
         virtual void OnRead();
-        virtual void OnWrite(double override);
+        virtual void OnWrite(double override, double desiredpositions);
         double TicksToPosition(const int32_t ticks) const;
     public:
         int32_t PositionToTicks(const double position) const;
         void Init();
         void Read();
-        void Write(double override);
+        void Write(double override, double desiredpositions);
         void PublishState(sensor_msgs::JointState& msg);
         const std::string& get_JointName() const;
         void set_JointName(const std::string& jointName);
