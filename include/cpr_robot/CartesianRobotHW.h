@@ -8,6 +8,8 @@
 #include <maxon_epos_driver/EposManager.hpp>
 #include <geometry_msgs/Point.h>
 #include <std_srvs/Trigger.h>
+#include <std_srvs/TriggerRequest.h>
+#include <std_srvs/TriggerResponse.h>
 #include <std_srvs/SetBool.h>
 #include <geometry_msgs/Vector3.h>
 

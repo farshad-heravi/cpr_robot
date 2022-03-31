@@ -172,7 +172,7 @@ namespace cpr_robot{
         // third motor will be handled by epos4 board
         std::vector< std::string > epos_motors = {motor_names[2]};
         epos_manager_.init(root_nh, robot_nh, epos_motors);
-        epos_manager_.setZero();
+        epos_manager_.setZero(); // TODO UNCOMMENT
     }
 
     void CartesianRobotHW::updateDiagnostics(){}    // TODO
@@ -185,29 +185,47 @@ namespace cpr_robot{
 
     void CartesianRobotHW::update_rosparam_values()
     {
-        std::string cartesian_robot_name;
-        root_nh_.param<std::string>("cartesian_robot_name", cartesian_robot_name, "cartesian_");
-
-        root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/x", needle_[0]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/y", needle_[1]);
-
-        root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/x", home_[0]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/y", home_[1]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/z", home_[2]);
-
-        root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint1", joint_ratios_[0]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint2", joint_ratios_[1]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint3", joint_ratios_[2]);
-
-        root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/x", sewing_point_[0]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/y", sewing_point_[1]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/z", sewing_point_[2]);
-
-        root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/x", offsets_[0]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/y", offsets_[1]);
-        root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/z", offsets_[2]);
+        // std::string cartesian_robot_name;
+        // if (root_nh_.hasParam("cartesian_robot_name"))
+        //     ROS_ERROR_STREAM("cartesian_robot_name not available in rosparam.");
+        // root_nh_.param<std::string>("cartesian_robot_name", cartesian_robot_name, "cartesian_");
         
-        root_nh_.param<double>("/"+cartesian_robot_name+"/third_link/radius", third_link_radius_);
+        // if (root_nh_.hasParam("/"+cartesian_robot_name+"/needle/x"))
+        //     ROS_ERROR_STREAM("/"+cartesian_robot_name+"/needle/x" << " not available in rosparam.");
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/needle/x", needle_[0]);
+        // if (root_nh_.hasParam("/"+cartesian_robot_name+"/needle/y"))
+        //     ROS_ERROR_STREAM("/"+cartesian_robot_name+"/needle/y" << " not available in rosparam.");
+        
+        // if (root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/x") || root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/y") || root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/z"))
+        //     ROS_ERROR_STREAM("/"+cartesian_robot_name+"/home_point/..." << " not available in rosparam.");
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/x", home_[0]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/y", home_[1]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/home_point/z", home_[2]);
+        
+        // if (root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/x") || root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/y") || root_nh_.hasParam("/"+cartesian_robot_name+"/home_point/z"))
+        //     ROS_ERROR_STREAM("/"+cartesian_robot_name+"/home_point/..." << " not available in rosparam.");
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint1", joint_ratios_[0]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint2", joint_ratios_[1]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/gear_ratios/joint3", joint_ratios_[2]);
+
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/x", sewing_point_[0]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/y", sewing_point_[1]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/sewing_start_point/z", sewing_point_[2]);
+
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/x", offsets_[0]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/y", offsets_[1]);
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/offsets/z", offsets_[2]);
+        
+        // root_nh_.param<double>("/"+cartesian_robot_name+"/third_link/radius", third_link_radius_);
+        
+
+        // CONFIG
+        needle_ = {0.6, 0.3};
+        home_ = {0.2,0.3,1.57};
+        joint_ratios_ = {0.01114,0.01114,13.33};
+        sewing_point_ = {0.3,0.3,-1.57};
+        offsets_ = {0,0,0};
+        third_link_radius_ = 0;
     }
 
     void CartesianRobotHW::ik_calculations(double &x, double &y, double &z, bool absolute)
@@ -272,19 +290,15 @@ namespace cpr_robot{
 
     bool CartesianRobotHW::SewingPointHandler(std_srvs::TriggerRequest  &req, std_srvs::TriggerResponse &res)
     {
-        ros::NodeHandle nh;
-        if (!nh.hasParam("/sewing_starting_point/x"))
-            ROS_ERROR_STREAM("sewing_start_point is not available in rosparam.");
-        double t1, t2, t3;
-        root_nh_.param<double>("/sewing_start_point/x", t1, 0);
-        root_nh_.param<double>("/sewing_start_point/y", t2, 0);
-        root_nh_.param<double>("/sewing_start_point/z", t3, 0);
-        ROS_INFO_STREAM("desired angle is: " << t3);
-        ik_calculations(t1,t2,t3);   // t1 and t2 are redundant!!!
-        ROS_INFO_STREAM("motor rotation is: " << t3);
+        double t1 = sewing_point_[0];
+        double t2 = sewing_point_[1];
+        double t3 = sewing_point_[2];
+        // ROS_INFO_STREAM("desired angle is: " << t3);
+        ik_calculations(t1,t2,t3, true);
+        ROS_INFO_STREAM("third motor rotation: " << t3 << " [rad]");
         std::vector<double> command = {igus_joint_position_[0], igus_joint_position_[1], t3};
         write(command);
-        ROS_INFO_STREAM("Now sending cartesian robot to : [" << t1 << ", " << t2 << "]");
+        ROS_INFO_STREAM("Now sending cartesian robot to : [" << t1 << ", " << t2 << "] [rad]");
         sleep(5);
         command = {t1, t2, t3};
         write(command);
@@ -295,18 +309,18 @@ namespace cpr_robot{
 
     bool CartesianRobotHW::SetActiveStateHandler(std_srvs::SetBoolRequest  &req, std_srvs::SetBoolResponse &res)
     {
-        if(req.data == true){
+        if(req.data){
             is_active_ = req.data;
             res.success = true;
             res.message = "cartesian robot activated.";
             ROS_INFO_STREAM("cartesian robot activated.");
             return true;
-        }else if (req.data == true)
+        }else if (!req.data)
         {
             is_active_ = req.data;
             res.success = true;
-            res.message = "cartesian robot diactivated.";
-            ROS_INFO_STREAM("cartesian robot diactivated.");
+            res.message = "cartesian robot deactivated.";
+            ROS_INFO_STREAM("cartesian robot deactivated.");
             return true;
         } else
             return false;
