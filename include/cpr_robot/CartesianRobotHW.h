@@ -29,12 +29,15 @@ namespace cpr_robot{
             void ik(const geometry_msgs::Vector3ConstPtr &msg);
             void gotoHandler(const geometry_msgs::Vector3ConstPtr &msg);
             ros::ServiceServer m_goto_sewing_point_srv_;
+            ros::ServiceServer m_third_link_zero_srv_;
             ros::ServiceServer m_avtivate_srv_;
             bool is_active_;
             bool SewingPointHandler(std_srvs::TriggerRequest  &req, std_srvs::TriggerResponse &res);
+            bool ThirdLinkSetZero(std_srvs::TriggerRequest  &req, std_srvs::TriggerResponse &res);
             bool SetActiveStateHandler(std_srvs::SetBoolRequest  &req, std_srvs::SetBoolResponse &res);
             void ik_calculations(double &x, double &y, double &z, bool absolute=false);
             void update_rosparam_values();
+            bool test_with_hardware;    // just for testing, will be removed later
 
         private:
             void init_motors(ros::NodeHandle &root_nh, ros::NodeHandle &robot_nh,

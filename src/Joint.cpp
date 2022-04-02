@@ -79,7 +79,6 @@ namespace cpr_robot
     {
         uint8_t dataBits;
         m_CurrentPosition=ReadPosition(m_LastTimeStamp, m_LastUpdate,m_ErrorFlags, dataBits);
-        // ROS_INFO_STREAM("Current position: " << m_CurrentPosition); // REMOVE
         m_bReferenced=(dataBits&DATABIT_REFERENCED)!=0x00;
         ROS_INFO_STREAM("Reference status of " << m_JointName << ": " << m_bReferenced);
         m_CurrentEffort=0.0;

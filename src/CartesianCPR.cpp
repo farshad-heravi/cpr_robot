@@ -33,7 +33,7 @@ namespace cpr_robot
         set_TicksPerMotorRotation(0, 2000);              // encoder steps: 500 impulse / turn = 2000 (500 * 4)
         set_MaxVelocity(0, 600);                        // maximum angular velocity of the JOINT [degrees / s]: see graph
         set_MinPosition(0, 0.0);                      // lower position bound of the JOINT [degrees]: unknown = axis length / radius
-        set_MaxPosition(0, 10*360.0);                       // upper position bound of the JOINT [degrees]: unknown
+        set_MaxPosition(0, 16*360.0);                       // upper position bound of the JOINT [degrees]: unknown
         set_MotorOffset(0, 0);                           // zero-position of the MOTOR in encoder ticks: user-defined
         
         // linear guide: 70 mm / 2*pi --> x_radius = 11.14 mm
@@ -92,8 +92,7 @@ namespace cpr_robot
             set_JointName(i, joint_names[i]);
         OnInit();
         for(size_t i=0;i<m_CountJoints;i++){
-            m_pJoints[i]->m_pModule->Command_ResetError();
-            m_pJoints[i]->EnableMotor();
+            m_pJoints[i]->EnableMotor();        // It also calls ResetError
         }
     }
 

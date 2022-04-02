@@ -368,6 +368,7 @@ namespace cpr_robot
 		uint8_t dataBits;
 		int32_t real = get_CurrentPosition(timeStamp, updateTime, errorFlags, dataBits);
 		m_MotorPosition = real;
+		set_TargetPosition(real);
 		Command_EnableMotor();
 		std::this_thread::sleep_for (std::chrono::milliseconds(20));
 		Command_EnableMotor();
