@@ -317,7 +317,7 @@ namespace cpr_robot{
     {
         epos_manager_.setZero();
         res.success = true;
-        res.message = "cartesian robot has moved to sewing start point.";
+        res.message = "cartesian robot third link set to zero at this position.";
         return true;
     }
 
